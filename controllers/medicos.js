@@ -82,10 +82,10 @@ const actualizarMedico = async (req, res = response) => {
             }
         }
 
-        const medicoActualizado = await Paciente.findByIdAndUpdate(id, campos, { new: true });
+        const medicoActualizado = await Medico.findByIdAndUpdate(id_doc, campos, { new: true });
         res.json({
             ok: true,
-            paciente: medicoActualizado
+            medico: medicoActualizado
         });
     } catch (error) {
         console.log(error);
