@@ -7,7 +7,7 @@ const Medico = require('../models/medicos');
 
 // GET - Visualizar
 const getMedicos = async (req, res) => {
-    const medicos = await Medico.find({}, 'id_doc nombredoc especialidad telefono ');
+    const medicos = await Medicos.find({}, 'id_doc nombredoc especialidad telefono ');
 
     res.status(200).json({
         ok: true,
@@ -29,7 +29,7 @@ const crearMedico = async (req, res = response) => {
     }
 
     try {
-        const existeid_doc = await Paciente.findOne({ id_doc });
+        const existeid_doc = await Medico.findOne({ id_doc });
         if (existeid_doc) {
             return res.status(400).json({
                 ok: false,
