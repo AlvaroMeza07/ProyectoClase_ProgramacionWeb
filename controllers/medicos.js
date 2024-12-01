@@ -2,12 +2,11 @@ const { response } = require('express');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 
-const Medicos = require('../models/medicos'); // Cambiado el modelo a 'medicos'
-const Medico = require('../models/medicos');
+const Medico = require('../models/medicos'); // Cambiado el modelo a 'medicos'
 
 // GET - Visualizar
 const getMedicos = async (req, res) => {
-    const medicos = await Medicos.find({}, 'id_doc nombredoc especialidad telefono ');
+    const medicos = await Medico.find({}, 'id_doc nombredoc especialidad telefono ');
 
     res.status(200).json({
         ok: true,
