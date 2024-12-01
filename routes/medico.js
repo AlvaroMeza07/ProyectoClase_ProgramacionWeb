@@ -19,7 +19,7 @@ router.put('/:id_doc', [
     check('especialidad', 'Especialidad del medico').isEmail(),
     check('telefono', 'El teléfono es obligatorio y debe ser un número').not().isEmpty(),
     check('clinica', 'Consultorio asignado').not().isEmpty()
-], actualizarPaciente);
+], actualizarMedico);
 
 router.delete('/:id_doc', borrarMedico);
 
