@@ -15,7 +15,7 @@ app.use(express.json());
 dbConnection();
 
 // Usar las rutas de los libros desde el archivo paciente.js
-app.use('/api/pacientes', require('./routes/paciente')); // Ruta para los pacientes
+app.use('/api/cita', require('./routes/cita')); // Ruta para los pacientes
 
 // Escuchar peticiones
 app.listen(3000, () => {
