@@ -37,7 +37,7 @@ const crearCita = async (req, res = response) => {
 
     try {
         // Verificar si el paciente existe
-        const paciente = await Paciente.findById(id_paciente);
+        const paciente = await Cita.findById(id_paciente);
         if (!paciente) {
             return res.status(404).json({
                 ok: false,
