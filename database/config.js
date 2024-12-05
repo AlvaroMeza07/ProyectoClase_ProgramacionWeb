@@ -15,7 +15,7 @@ const dbConnection = async () => {
       console.log('Conexión a la base de datos "Medico" exitosa.');
   
       // Conexión a la base de datos de Pacientes
-      await mongoose.createConnection(process.env.DB_CNN_PACIENTES, {
+      await mongoose.createConnection(process.env.DB_CNN_CITA, {
       });
       console.log('Conexión a la base de datos "Pacientes" exitosa.');
     } catch (error) {
