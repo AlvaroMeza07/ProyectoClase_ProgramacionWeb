@@ -2,7 +2,7 @@ const { response } = require('express');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 
-const Medicos = require('../models/medicos'); // Cambiado el modelo a 'medicos'
+const Medico = require('../models/medicos'); // Cambiado el modelo a 'medicos'
 
 // GET - Visualizar
 const getMedicos = async (req, res) => {
@@ -28,7 +28,7 @@ const crearMedico = async (req, res = response) => {
     }
 
     try {
-        const existeid_doc = await Paciente.findOne({ id_doc });
+        const existeid_doc = await Medico.findOne({ id_doc });
         if (existeid_doc) {
             return res.status(400).json({
                 ok: false,
@@ -58,7 +58,7 @@ const actualizarMedico = async (req, res = response) => {
     const id = req.params.id;
 
     try {
-        const medicoDB = await Medico.findById(id);
+        const medicoDB = await Medico.findById(id_doc);
 
         if (!medicoDB) {
             return res.status(404).json({
@@ -70,11 +70,11 @@ const actualizarMedico = async (req, res = response) => {
         // Ejecutar actualización
         const campos = req.body;
 
-        if (pacienteDB.gmail === req.body.gmail) {
-            delete campos.gmail;
+        if (medicoDB.gmail === req.body.id_doc) {
+            delete campos.id_doc;
         } else {
-            const existeGmail = await Paciente.findOne({ gmail: req.body.gmail });
-            if (existeGmail) {
+            const existeid_doc = await Medico.findOne({ gmail: req.body.id_doc });
+            if (existeid_doc) {
                 return res.status(400).json({
                     ok: false,
                     msg: 'Ya existe un paciente con ese Gmail'
@@ -82,10 +82,10 @@ const actualizarMedico = async (req, res = response) => {
             }
         }
 
-        const pacienteActualizado = await Paciente.findByIdAndUpdate(id, campos, { new: true });
+        const medicoActualizado = await Medico.findByIdAndUpdate(id_doc, campos, { new: true });
         res.json({
             ok: true,
-            paciente: pacienteActualizado
+            medico: medicoActualizado
         });
     } catch (error) {
         console.log(error);
