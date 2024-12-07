@@ -39,39 +39,38 @@ const crearCita = async (req, res = response) => {
         // Verificar si el paciente existe
         const paciente = await Cita.findById(id_paciente);
         if (!paciente) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Paciente no encontrado'
-            });
+          return res.status(404).json({
+            ok: false,
+            msg: 'Paciente no encontrado'
+          });
         }
-
+      
         // Verificar si ya existe una cita para el paciente en esa fecha y hora
         const citaExistente = await Cita.findOne({ id_paciente, fecha_cita, hora_cita });
         if (citaExistente) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'Ya existe una cita para este paciente en esa fecha y hora.'
-            });
+          return res.status(400).json({
+            ok: false,
+            msg: 'Ya existe una cita para este paciente en esa fecha y hora.'
+          });
         }
-
+      
         // Crear la cita
         const cita = new Cita(req.body);
-
         await cita.save();
-
+      
         res.status(200).json({
-            ok: true,
-            cita
+          ok: true,
+          cita
         });
-    } catch (error) {
+      } catch (error) {
         console.log(error);
         res.status(500).json({
-            ok: false,
-            msg: 'Error inesperado al crear la cita'
+          ok: false,
+          msg: 'Error inesperado al crear la cita'
         });
     }
-};
-
+}
+      
 
 // PUT - Actualizar cita
 const actualizarCita = async (req, res = response) => {
@@ -136,5 +135,5 @@ module.exports = {
     getCitas,
     crearCita,
     actualizarCita,
-    borrarCita
+    borrarCita,
 };

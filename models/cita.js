@@ -24,6 +24,7 @@ const CitaSchema = new Schema({
         type: Date,  // Fecha de la cita
         required: true
     },
+
     hora_cita: {
         type: String,  // Hora de la cita (puedes usar tipo Date o String, dependiendo de cómo gestionas la hora)
         required: true
