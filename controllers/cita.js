@@ -1,139 +1,140 @@
-const { response } = require('express');
-const { validationResult } = require('express-validator');
-const Cita = require('../models/cita'); // Modelo de Cita
+const {response} = require('express');
+const {validationResult} = require('express-validator');
+const Cita = require('../models/cita');
 
-// GET - Visualizar
+
+//GET CITA (VAMOS A MOSTRAR LAS CITAS REGISTRADAS)
 const getCitas = async (req, res) => {
     try {
-        const citas = await Cita.find({})
-            .populate('id_paciente', 'nombre telefono') // Popula los datos del paciente
-            .exec();
+        // Obtén las citas de la base de datos
+        const citas = await Cita.find({}, 'nombre id_paciente telefono especialidad fecha_cita hora_cita demerg numero_cita');
         
+        // Devuelve las citas en la respuesta
         res.status(200).json({
             ok: true,
+            msj: 'PETICIÓN REALIZADA CORRECTAMENTE',
             citas
         });
     } catch (error) {
-        console.log(error);
+        console.error("Error al obtener las citas:", error.message);
+
+        // Manejo de errores
         res.status(500).json({
             ok: false,
-            msg: 'Error al obtener las citas'
+            msj: 'ERROR INESPERADO AL OBTENER LAS CITAS',
+            error: error.message
         });
     }
 };
 
-// POST - Crear cita
-const crearCita = async (req, res = response) => {
-    const { nombre_completo, id_paciente, telefono, especialidad, fecha_cita, hora_cita } = req.body;
-
-    const errores = validationResult(req);
-
-    if (!errores.isEmpty()) {
-        return res.status(400).json({
-            ok: false,
-            errores: errores.mapped()
-        });
-    }
-
+//POST CITA (AQUI ES DONDE VAMOS A REGISTRAR LAS CITAS)
+const crearCita = async (req, res) => {
     try {
-        // Verificar si el paciente existe
-        const paciente = await Cita.findById(id_paciente);
-        if (!paciente) {
-          return res.status(404).json({
-            ok: false,
-            msg: 'Paciente no encontrado'
-          });
-        }
-      
-        // Verificar si ya existe una cita para el paciente en esa fecha y hora
-        const citaExistente = await Cita.findOne({ id_paciente, fecha_cita, hora_cita });
-        if (citaExistente) {
-          return res.status(400).json({
-            ok: false,
-            msg: 'Ya existe una cita para este paciente en esa fecha y hora.'
-          });
-        }
-      
-        // Crear la cita
-        const cita = new Cita(req.body);
-        await cita.save();
-      
-        res.status(200).json({
-          ok: true,
-          cita
+        const { id_paciente, nombre, telefono, especialidad, fecha_cita, hora_cita, demerg } = req.body;
+
+        // Aquí iría la lógica para guardar en la base de datos
+        const nuevaCita = new Cita({
+            id_paciente,
+            nombre,
+            telefono,
+            especialidad,
+            fecha_cita,
+            hora_cita,
+            demerg: demerg || null
         });
-      } catch (error) {
-        console.log(error);
+
+        await nuevaCita.save(); // Asegúrate de que tu modelo esté correctamente configurado
+
+        res.status(201).json({
+            ok: true,
+            msg: "Cita creada correctamente",
+            cita: nuevaCita
+        });
+    } catch (error) {
+        console.error("Error al guardar la cita:", error);
         res.status(500).json({
-          ok: false,
-          msg: 'Error inesperado al crear la cita'
+            ok: false,
+            msg: "ERROR INESPERADO AL GUARDAR"
         });
     }
-}
-      
+};
 
-// PUT - Actualizar cita
-const actualizarCita = async (req, res = response) => {
-    const id = req.params.id;
 
+//PUT DE ACTUALIZAR LA CITA MEDIANTE LA BUSQUEDA DEL NUMERO DE CITA
+const actualizarCita = async (req, res) => {
     try {
-        const citaDB = await Cita.findById(id);
+        const { numero_cita } = req.params; // Obtenemos el número de cita desde los parámetros
+        const { telefono, especialidad, fecha_cita, hora_cita, demerg } = req.body; // Obtenemos los campos que se van a actualizar
 
-        if (!citaDB) {
+        // Validamos que el número de cita exista
+        const citaExistente = await Cita.findOne({ numero_cita });
+        if (!citaExistente) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No se encuentra esa cita'
+                msg: `NO SE ENCONTRO CITA CON NUMERO: ${numero_cita}`
             });
         }
 
-        // Ejecutar actualización
-        const campos = req.body;
+        // Actualizamos solo los campos permitidos
+        citaExistente.telefono = telefono || citaExistente.telefono;
+        citaExistente.especialidad = especialidad || citaExistente.especialidad;
+        citaExistente.fecha_cita = fecha_cita || citaExistente.fecha_cita;
+        citaExistente.hora_cita = hora_cita || citaExistente.hora_cita;
+        citaExistente.demerg = demerg || citaExistente.demerg;
 
-        const citaActualizada = await Cita.findByIdAndUpdate(id, campos, { new: true });
-        res.json({
+        // Guardamos los cambios
+        const citaActualizada = await citaExistente.save();
+
+        res.status(200).json({
             ok: true,
+            msg: "CITA ACTUALIZADA CORRECTAMENTE",
             cita: citaActualizada
         });
     } catch (error) {
-        console.log(error);
+        console.error("ERROR AL ACTUALIZAR LA CITA:", error);
         res.status(500).json({
             ok: false,
-            msg: 'Error inesperado, no se pudo actualizar la cita'
+            msg: "ERROR INESPERADO AL ACTUALIZAR"
         });
     }
 };
 
-// DELETE - Borrar cita
-const borrarCita = async (req, res = response) => {
-    const id = req.params.id;
-
+//DELETE CITA ELIMINAR UNA CITA POR NUMERO DE CITA
+const eliminarCita = async (req, res) => {
     try {
-        const citaDB = await Cita.findById(id);
-        if (!citaDB) {
+        const { numero_cita } = req.params; // Obtenemos el número de cita 
+
+        // Buscar y eliminar la cita
+        const citaEliminada = await Cita.findOneAndDelete({ numero_cita });
+
+        if (!citaEliminada) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No se encuentra esa cita'
+                msg: `No se encontró una cita con el número: ${numero_cita}`
             });
         }
 
-        await Cita.findByIdAndDelete(id);
-
-        res.json({
+        res.status(200).json({
             ok: true,
-            msg: 'Cita borrada correctamente'
+            msg: "Cita eliminada correctamente",
+            cita: citaEliminada
         });
     } catch (error) {
-        console.log(error);
+        console.error("Error al eliminar la cita:", error);
         res.status(500).json({
             ok: false,
-            msg: 'Error al borrar la cita'
+            msg: "ERROR INESPERADO AL ELIMINAR"
         });
     }
 };
+
+
 
 module.exports = {
     getCitas,
     crearCita,
     actualizarCita,
-    borrarCita,
-};
+    eliminarCita
+}
+
+console.log('CONTROLLER FUNCIONANDO CORRECTAMENTE');

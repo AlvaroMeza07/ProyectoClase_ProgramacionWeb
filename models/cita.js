@@ -1,19 +1,18 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const {Schema, model} = require('mongoose');
+const Counter = require('./Counter');
 
-// Definir el esquema para Cita
-const CitaSchema = new Schema({
-    nombre_completo: {
+const CitaSchema = Schema({    
+
+    nombre: {
         type: String,
         required: true
     },
     id_paciente: {
-        type: mongoose.Schema.Types.ObjectId, // Referencia al modelo Paciente
-        ref: 'Paciente',
-        required: true
+        type: String,
+        required: true,
     },
     telefono: {
-        type: String,
+        type: Number,
         required: true
     },
     especialidad: {
@@ -26,15 +25,51 @@ const CitaSchema = new Schema({
     },
 
     hora_cita: {
-        type: String,  // Hora de la cita (puedes usar tipo Date o String, dependiendo de cómo gestionas la hora)
+        type: String,  // Hora de la cita 
         required: true
+    },
+
+    demerg: {
+        type: String,
+        default: null //SE COLOCA ASI PORQUE CUANDO AGREGEMOS UNA CITA NORMAL NO OCUPAMOS ESTE CAMPO SOLO EN EMERGENCIA
+    },
+
+    numero_cita: {
+        type: Number,
+        unique: true // Este sera un contador de citas sin que se repita la misma
     }
-}, {
-    timestamps: true // Agrega automáticamente campos createdAt y updatedAt
 });
 
-// Crear el modelo basado en el esquema
-const Cita = mongoose.model('Cita', CitaSchema);
 
-// Exportar el modelo
-module.exports = Cita;
+CitaSchema.pre('save', async function (next) {
+    if (!this.isNew) return next(); // Solo se genera número de cita para documentos nuevos
+
+    try {
+        // Busca y actualiza el contador correspondiente
+        const counter = await Counter.findOneAndUpdate(
+            { name: 'numero_cita' },
+            { $inc: { seq: 1 } }, // Incrementa el contador en 1
+            { new: true, upsert: true } // Crea el documento si no existe
+        );
+
+        // Asigna el valor incrementado al campo numero_cita
+        this.numero_cita = counter.seq;
+        next();
+    } catch (error) {
+        next(error); // Propaga el error
+    }
+});
+
+
+CitaSchema.method('toJSON', function(){
+    const {__v, _id, ...object} = this.toObject();
+
+    object.uid=_id;
+
+    return object;
+
+})
+
+
+module.exports = model('Cita', CitaSchema);
+console.log('ARCHIVO MODEL CARGADO CORRECTAMENTE');

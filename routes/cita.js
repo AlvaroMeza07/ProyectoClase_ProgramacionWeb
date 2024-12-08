@@ -1,35 +1,39 @@
-const { Router } = require('express');
-const { check } = require('express-validator');
-const { getCitas, crearCita, borrarCita, actualizarCita } = require('../controllers/cita');
-
+const {Router} = require('express');
+const {check} = require('express-validator');
+const {getCitas, crearCita, actualizarCita, eliminarCita} = require ('../controllers/cita');
 const router = Router();
 
-// Ruta para obtener todas las citas
+
+
+//PETICON DE GET
 router.get('/', getCitas);
+console.log('GET CITAS LEVANTADO CORRECTAMENTE');
 
-// Ruta para agendar una cita
-router.post('/cita', [
-    check('nombre_completo', 'El nombre completo es obligatorio').not().isEmpty(),
-    check('id_paciente', 'El ID del paciente es obligatorio').not().isEmpty(),
-    check('telefono', 'El teléfono es obligatorio y debe ser un número').not().isEmpty(),
-    check('especialidad', 'La especialidad es obligatoria').not().isEmpty(),
-    check('fecha_cita', 'La fecha de la cita es obligatoria y debe ser una fecha válida').isDate(),
-    check('hora_cita', 'La hora de la cita es obligatoria').not().isEmpty()
+
+//POST DE CITA
+router.post('/', [
+        check('id_paciente', 'El ID del Paciente es OBLIGATORIO').not().isEmpty(),
+        check('nombre', 'El nombre del paciente es OBLIGATORIO').not().isEmpty(),
+        check('telefono', 'El numero telefonico es OBLIGATORIO').not().isEmpty(),
+        check('especialidad', 'La especialidad de la cita es OBLIGATORIA').not().isEmpty(),
+        check('fecha_cita', 'La fecha de la cita es OBLIGATORIA').not().isEmpty(),
+        check('hora_cita','La hora de la cita es OBLIGATORIA').not().isEmpty(),
+        check('demerg').optional().isString().withMessage('El campo demerg debe ser una cadena de texto'),
+
 ], crearCita);
+console.log('EL POST DE CITAS ESTA FUNCIONANDO CORRECTAMENTE');
+
+//PUT DE CITA OSEA ACTUALIZAR
+
+router.put('/:numero_cita', actualizarCita);
+console.log('EL PUT DE CITAS ESTA FUNCIONANDO CORRECTAMENTE');
 
 
-// Ruta para actualizar una cita
-router.put('/:id', [
-    check('nombre_completo', 'El nombre completo es obligatorio').not().isEmpty(),
-    check('id_paciente', 'El ID del paciente es obligatorio').not().isEmpty(),
-    check('telefono', 'El teléfono debe ser un número').optional().not().isEmpty(),
-    check('especialidad', 'La especialidad debe ser válida').optional().not().isEmpty(),
-    check('fecha_cita', 'La fecha de la cita es obligatoria y debe ser una fecha válida').isDate(),
-    check('hora_cita', 'La hora de la cita debe ser válida').optional().not().isEmpty()
-], actualizarCita);
+//DELETE DE CITA OSEA ELIMINAR
+router.delete('/:numero_cita', eliminarCita);
+console.log('EL DELETE DE CITAS ESTA FUNCIONANDO CORRECTAMENTE');
 
-// Ruta para eliminar una cita
-router.delete('/:id', borrarCita);
+
 
 module.exports = router;
 
